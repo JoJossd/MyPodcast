@@ -47,32 +47,33 @@ class _AudioControlState extends State<AudioControl> {
   @override
   Widget build(BuildContext context) {
     final item = Provider.of<Podcast>(context).selectedItem;
-    return Container(
-        // height: 100,
+    return SizedBox(
+        width: 300,
+        height: 120,
         child: Column(
-      children: <Widget>[
-        Slider(
-          value: _playPosition,
-          onChanged: null,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            IconButton(
-              icon: _isPlaying ? Icon(Icons.pause) : Icon(Icons.play_arrow),
-              iconSize: Theme.of(context).iconTheme.size,
-              color: Colors.black,
-              onPressed: () {
-                if (_isPlaying) {
-                  _pause();
-                } else {
-                  _play(item.findElements('guid').single.text);
-                }
-              },
+            Slider(
+              value: _playPosition,
+              onChanged: null,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                IconButton(
+                  icon: _isPlaying ? Icon(Icons.pause) : Icon(Icons.play_arrow),
+                  iconSize: Theme.of(context).iconTheme.size,
+                  color: Colors.black,
+                  onPressed: () {
+                    if (_isPlaying) {
+                      _pause();
+                    } else {
+                      _play(item.findElements('guid').single.text);
+                    }
+                  },
+                ),
+              ],
             ),
           ],
-        ),
-      ],
-    ));
+        ));
   }
 }

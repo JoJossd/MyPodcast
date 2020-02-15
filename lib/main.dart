@@ -8,9 +8,19 @@ void main() => runApp(MyPodcastApp());
 
 class MyPodcastApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext myPodcastAppContext) {
+    // ChangeNotifierProvider is built on myPodcastAppContext
     return ChangeNotifierProvider(
-      // _ represents the context of ChangeNotifierProvider
+      /*
+      _ is the context of ChangeNotifierProvider,
+      which is located below MyPodcastApp widget and above MaterialApp widget,
+
+      when instantiate Podcast(), we need to call getItems() function,
+      to get access to _items.
+
+      ..=> execute the function on the returned object(in this case: Podcast()), 
+      but after which don't return the result of this function.
+      */
       create: (_) => Podcast()..getItems(),
       child: MaterialApp(
         title: 'My Podcast',
