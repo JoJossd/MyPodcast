@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:my_podcast/model/rssfeed_data.dart';
 import 'package:my_podcast/page/episode_page.dart';
 import 'package:provider/provider.dart';
-import 'package:xml/xml.dart' as xml;
+import 'package:webfeed/webfeed.dart';
+
+// import 'package:xml/xml.dart' as xml;
 
 class HomePage extends StatelessWidget {
   @override
@@ -19,15 +21,15 @@ class HomePage extends StatelessWidget {
       Provider.of<Podcast>(context) cannot create a [BuildContext],
       it can only use the nearest context above.
 
-      Since EpisodeListView or Center is built on Scaffold-body(not Scaffold) widget,
+      Since EpisodeListView or Center is built on Scaffold-body widget(not Scaffold, also not HomePage),
       but that body widget doesn't have a [BuildContext],
       so we have to provide a [BuildContext] before using the properties in ChangeNotifierProvider,
       to make sure the rebuild only apply to Scaffold-body not the whole Scaffold
       */
       body: Consumer<Podcast>(
         builder: (scaffoldBodyContext, podcast, _) {
-          return podcast.items != null
-              ? EpisodeListView(items: podcast.items)
+          return podcast.feed != null
+              ? EpisodeListView(rssFeed: podcast.feed)
               : Center(child: CircularProgressIndicator());
         },
       ),
@@ -36,22 +38,23 @@ class HomePage extends StatelessWidget {
 }
 
 class EpisodeListView extends StatelessWidget {
-  const EpisodeListView({Key key, @required this.items}) : super(key: key);
-  final Iterable<xml.XmlElement> items;
+  const EpisodeListView({Key key, @required this.rssFeed}) : super(key: key);
+  final RssFeed rssFeed;
 
   @override
   Widget build(BuildContext episodeListViewContext) {
     return ListView(
-      children: items
+      children: rssFeed.items
           .map(
             (i) => ListTile(
               contentPadding: EdgeInsets.all(16),
               title: Text(
-                i.findElements('title').single.text,
+                i.title,
                 style: TextStyle(fontSize: 20),
               ),
               subtitle: Text(
-                i.findElements('itunes:summary').single.text,
+                // itunes:summary?
+                i.itunes.summary,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

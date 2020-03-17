@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:xml/xml.dart' as xml;
+import 'package:webfeed/webfeed.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
@@ -21,31 +21,33 @@ class Podcast with ChangeNotifier {
   Why bother use a private variable?
   => to notify other widgets when the variable gets modified.
   */
-  Iterable<xml.XmlElement> _items;
-  Iterable<xml.XmlElement> get items => _items;
 
-  Future<void> getItems() async {
+  RssFeed _feed;
+  RssItem _selectedItem;
+
+  RssFeed get feed => _feed;
+
+  Future<void> parseFeed() async {
     final response = await http.get(feedUrl);
     if (response.statusCode == 200) {
       final rssString = utf8.decode(response.bodyBytes);
-      final rssDocument = xml.parse(rssString);
-      _items = rssDocument.findAllElements('item');
+      _feed = RssFeed.parse(rssString);
     } else {
       throw Exception('bad http response status ${response.statusCode}');
     }
     notifyListeners();
   }
 
-  xml.XmlElement _selectedItem;
-  xml.XmlElement get selectedItem => _selectedItem;
+  RssItem get selectedItem => _selectedItem;
 
-  set selectedItem(xml.XmlElement value) {
+  set selectedItem(RssItem value) {
     _selectedItem = value;
     notifyListeners();
   }
 
-  void download(xml.XmlElement item) async {
-    final mediaUri = item.findElements('guid').single.text;
+  void download(RssItem item) async {
+    // mp3 src need to be fixed
+    final mediaUri = item.enclosure.url;
 
     final client = http.Client();
     final req = http.Request('GET', Uri.parse(mediaUri));
@@ -55,7 +57,6 @@ class Podcast with ChangeNotifier {
       throw Exception('bad mediaUri response status ${res.statusCode}');
     }
 
-    // guid text => https://resezfm.meldingcloud.com/ueditor/audio/2002/1081662905398.mp3
     final file = File(await _getDownloadPath(path.split(mediaUri).last));
 
     res.stream.pipe(file.openWrite()).whenComplete(() {

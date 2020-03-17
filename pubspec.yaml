@@ -25,7 +25,12 @@ dependencies:
   cupertino_icons: ^0.1.2
   flutter_sound: ^2.0.4
   http: ^0.12.0+4
-  xml: ^3.5.0
+
+  webfeed:
+    git:
+      url: https://github.com/witochandra/webfeed.git
+      ref: master
+
   provider: ^4.0.3
   path_provider: ^1.6.0
   path: ^1.6.4
