@@ -40,7 +40,7 @@ class _AudioControlState extends State<AudioControl> {
   }
 
   Future<void> _pause() async {
-    await _sound.stopPlayer();
+    await _sound.pausePlayer();
     setState(() => _isPlaying = false);
   }
 
@@ -67,7 +67,7 @@ class _AudioControlState extends State<AudioControl> {
                     if (_isPlaying) {
                       _pause();
                     } else {
-                      _play(item.findElements('guid').single.text);
+                      _play(item.enclosure.url);
                     }
                   },
                 ),

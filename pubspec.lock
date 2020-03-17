@@ -233,8 +233,17 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.0.8"
-  xml:
+  webfeed:
     dependency: "direct main"
+    description:
+      path: "."
+      ref: master
+      resolved-ref: cf3bb97ade9d673ed69dcea0fc32c2e9b04f6fc8
+      url: "https://github.com/witochandra/webfeed.git"
+    source: git
+    version: "0.4.2"
+  xml:
+    dependency: transitive
     description:
       name: xml
       url: "https://pub.flutter-io.cn"

@@ -16,29 +16,32 @@ class EpisodePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(episodePageContext).primaryColor,
       appBar: AppBar(
-        title: Text(item.findElements('title').single.text),
+        title: Text(item.title),
         elevation: 0,
       ),
       body: SafeArea(
         child: Column(
           children: <Widget>[
-            Flexible(
-              flex: 3,
+            Container(
+              // flex: 3,
+              height: 400,
+              width: 400,
               child: Padding(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(28),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(imageUrl),
                 ),
               ),
             ),
-            Flexible(
-              flex: 2,
+            Container(
+              // flex: 2,
+              height: 210,
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: SingleChildScrollView(
                   child: Text(
-                    item.findElements('itunes:summary').single.text,
+                    item.itunes.summary,
                     style: TextStyle(fontSize: 20),
                   ),
                 ),
