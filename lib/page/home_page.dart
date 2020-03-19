@@ -6,7 +6,24 @@ import 'package:webfeed/webfeed.dart';
 
 // import 'package:xml/xml.dart' as xml;
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  var navIndex = 0;
+
+  final List<Widget> pages = [
+    EpisodeListPage(),
+    DummyPage(),
+  ];
+
+  final List<IconData> iconList = [
+    Icons.home,
+    Icons.announcement,
+  ];
+
   @override
   Widget build(BuildContext homepageContext) {
     return Scaffold(
@@ -15,25 +32,75 @@ class HomePage extends StatelessWidget {
         elevation: 0,
       ),
       backgroundColor: Theme.of(homepageContext).primaryColor,
-
-      /*
-      use Consumer to provide a [BuildContext] on which we use the properties in Provider.
-      Provider.of<Podcast>(context) cannot create a [BuildContext],
-      it can only use the nearest context above.
-
-      Since EpisodeListView or Center is built on Scaffold-body widget(not Scaffold, also not HomePage),
-      but that body widget doesn't have a [BuildContext],
-      so we have to provide a [BuildContext] before using the properties in ChangeNotifierProvider,
-      to make sure the rebuild only apply to Scaffold-body not the whole Scaffold
-      */
-      body: Consumer<Podcast>(
-        builder: (scaffoldBodyContext, podcast, _) {
-          return podcast.feed != null
-              ? EpisodeListView(rssFeed: podcast.feed)
-              : Center(child: CircularProgressIndicator());
-        },
+      body: pages[navIndex],
+      bottomNavigationBar: MyNavBar(
+        icons: iconList,
+        onPressed: (i) => setState(() => navIndex = i),
+        activeIndex: navIndex,
       ),
     );
+  }
+}
+
+class MyNavBar extends StatefulWidget {
+  const MyNavBar({
+    @required this.icons,
+    @required this.onPressed,
+    @required this.activeIndex,
+  }) : assert(icons != null);
+
+  final List<IconData> icons;
+  final Function(int) onPressed;
+  final int activeIndex;
+
+  @override
+  _MyNavBarState createState() => _MyNavBarState();
+}
+
+class _MyNavBarState extends State<MyNavBar> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 80,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          for (var i = 0; i < widget.icons.length; i++)
+            IconButton(
+              icon: Icon(widget.icons[i], size: 40),
+              color:
+                  i == widget.activeIndex ? Colors.blue[600] : Colors.black45,
+              onPressed: () => widget.onPressed(i),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class EpisodeListPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    /*
+    use Consumer to provide a [BuildContext] on which we use the properties in Provider.
+    Provider.of<Podcast>(context) cannot create a [BuildContext],
+    it can only use the nearest context above.
+
+    Since EpisodeListView or Center is built on Scaffold-body widget(not Scaffold, also not HomePage),
+    but that body widget doesn't have a [BuildContext],
+    so we have to provide a [BuildContext] before using the properties in ChangeNotifierProvider,
+    to make sure the rebuild only apply to Scaffold-body not the whole Scaffold
+    */
+    return Consumer<Podcast>(builder: (consumerContext, podcast, _) {
+      return podcast.feed != null
+          ? EpisodeListView(rssFeed: podcast.feed)
+          : Center(child: CircularProgressIndicator());
+    });
   }
 }
 
@@ -53,7 +120,6 @@ class EpisodeListView extends StatelessWidget {
                 style: TextStyle(fontSize: 20),
               ),
               subtitle: Text(
-                // itunes:summary?
                 i.itunes.summary,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -86,6 +152,15 @@ class EpisodeListView extends StatelessWidget {
             ),
           )
           .toList(),
+    );
+  }
+}
+
+class DummyPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Dummy Page'),
     );
   }
 }
