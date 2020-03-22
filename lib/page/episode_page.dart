@@ -38,7 +38,7 @@ class EpisodePage extends StatelessWidget {
               // flex: 2,
               height: 210,
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(36),
                 child: SingleChildScrollView(
                   child: Text(
                     item.itunes.summary,

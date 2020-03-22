@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:my_podcast/model/rssfeed_data.dart';
 import 'package:my_podcast/page/episode_page.dart';
+import 'package:my_podcast/widget/custom_bottom_navbar.dart';
 import 'package:provider/provider.dart';
 import 'package:webfeed/webfeed.dart';
-
-// import 'package:xml/xml.dart' as xml;
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,7 +20,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<IconData> iconList = [
     Icons.home,
-    Icons.announcement,
+    Icons.bookmark,
   ];
 
   @override
@@ -35,49 +34,10 @@ class _HomePageState extends State<HomePage> {
       body: pages[navIndex],
       bottomNavigationBar: MyNavBar(
         icons: iconList,
-        onPressed: (i) => setState(() => navIndex = i),
+        onPressed: (i) {
+          setState(() => navIndex = i);
+        },
         activeIndex: navIndex,
-      ),
-    );
-  }
-}
-
-class MyNavBar extends StatefulWidget {
-  const MyNavBar({
-    @required this.icons,
-    @required this.onPressed,
-    @required this.activeIndex,
-  }) : assert(icons != null);
-
-  final List<IconData> icons;
-  final Function(int) onPressed;
-  final int activeIndex;
-
-  @override
-  _MyNavBarState createState() => _MyNavBarState();
-}
-
-class _MyNavBarState extends State<MyNavBar> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 80,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          for (var i = 0; i < widget.icons.length; i++)
-            IconButton(
-              icon: Icon(widget.icons[i], size: 40),
-              color:
-                  i == widget.activeIndex ? Colors.blue[600] : Colors.black45,
-              onPressed: () => widget.onPressed(i),
-            ),
-        ],
       ),
     );
   }
