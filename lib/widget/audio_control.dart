@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:my_podcast/model/rssfeed_data.dart';
+
+import 'package:audioplayers/audioplayers.dart';
+import 'package:audioplayers/audio_cache.dart';
 import 'package:provider/provider.dart';
+
+import 'package:my_podcast/model/rssfeed_data.dart';
 
 class AudioControl extends StatefulWidget {
   @override
@@ -9,39 +12,80 @@ class AudioControl extends StatefulWidget {
 }
 
 class _AudioControlState extends State<AudioControl> {
-  FlutterSound _sound;
+  // AudioCache audioCache = AudioCache();
+  AudioPlayer audioPlayer = AudioPlayer();
+
   bool _isPlaying = false;
-  double _playPosition;
-  Stream<PlayStatus> _playerSubscription;
+  bool _isStarted = false;
+  Duration _duration;
+  Duration _playPosition;
+  int time;
+  String timeLeft = "";
+  double progress = 0.0;
 
   // set the initial value of some variables when the app lunchs.
   @override
   void initState() {
     super.initState();
-    _sound = FlutterSound();
-    _playPosition = 0;
+
+    audioPlayer.onAudioPositionChanged.listen((Duration p) async {
+      print('Current position: $p');
+      time = await audioPlayer.getDuration();
+      _duration = p;
+      if (_duration == null) {
+        timeLeft = "Time Left 0s/0s";
+      } else {
+        timeLeft = "Time Left ${_duration.inSeconds}s/${time / 1000}s";
+      }
+      if (time == null || _duration == null) {
+        progress = 0.0;
+      } else {
+        progress = (_duration.inMilliseconds) / time;
+      }
+      print(progress);
+      setState(() {});
+    });
+
+    audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) {
+      print("$state");
+      if (state == AudioPlayerState.PLAYING) {
+        setState(() {
+          _isPlaying = true;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _isPlaying = false;
+          });
+        }
+      }
+    });
   }
 
   Future<void> _play(String url) async {
-    await _sound.startPlayer(url);
-    /*
-    Stream.listen() returns a StreamSubscription,
-    hence we use Stream..listen() to get the returns of flutterSound.onPlayerStateChanged,
-    which is a Stream, then use it as 'e' in the following listen part
-    */
-    _playerSubscription = _sound.onPlayerStateChanged
-      ..listen((e) {
-        if (e != null) {
-          print(e.currentPosition);
-          setState(() => _playPosition = e.currentPosition / e.duration);
-        }
-      });
-    setState(() => _isPlaying = true);
+    if (!_isStarted) {
+      await audioPlayer.play(url);
+      setState(() => _isStarted = true);
+    } else
+      await audioPlayer.resume();
+
+    // setState(() => _isPlaying = true);
   }
 
   Future<void> _pause() async {
-    await _sound.pausePlayer();
-    setState(() => _isPlaying = false);
+    await audioPlayer.pause();
+    // setState(() => _isPlaying = false);
+  }
+
+  // Future<void> _slideJump(double _newPosition) async {
+  //   String result = await _sound.seekToPlayer(_newPosition.toInt());
+  //   setState(() => _playPosition = _newPosition);
+  // }
+  @override
+  void dispose() async {
+    await audioPlayer.release();
+    await audioPlayer.dispose();
+    super.dispose();
   }
 
   @override
@@ -52,8 +96,9 @@ class _AudioControlState extends State<AudioControl> {
         height: 120,
         child: Column(
           children: <Widget>[
-            Slider(
-              value: _playPosition,
+            // TODO: implement draggable controller
+            Slider.adaptive(
+              value: 0,
               onChanged: null,
             ),
             Row(
@@ -64,11 +109,7 @@ class _AudioControlState extends State<AudioControl> {
                   iconSize: Theme.of(context).iconTheme.size,
                   color: Colors.black,
                   onPressed: () {
-                    if (_isPlaying) {
-                      _pause();
-                    } else {
-                      _play(item.enclosure.url);
-                    }
+                    _isPlaying ? _pause() : _play(item.enclosure.url);
                   },
                 ),
               ],
