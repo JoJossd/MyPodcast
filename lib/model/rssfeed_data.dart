@@ -12,42 +12,68 @@ final feedUrl = 'https://aezfm.meldingcloud.com/rss/program/11';
 // seems adding nonexist path doesn't work
 final pathSuffix = 'dashcast/downloads';
 
+class ItemTile {
+  RssItem item;
+  DownloadState downloadState;
+
+  ItemTile({this.item, this.downloadState});
+}
+
+enum DownloadState { untouched, downloading, finished }
+
+// TODO: keep ItemState consistant after restart
 class Podcast with ChangeNotifier {
   /*
-  _items is the current value in the app,
-  and it is acquired by getItems() function.
-  once _items is acquired, items is also availiable through getter.
-
   Why bother use a private variable?
   => to notify other widgets when the variable gets modified.
   */
-
   RssFeed _feed;
-  RssItem _selectedItem;
-
   RssFeed get feed => _feed;
 
-  Future<void> parseFeed() async {
-    final response = await http.get(feedUrl);
-    if (response.statusCode == 200) {
-      final rssString = utf8.decode(response.bodyBytes);
-      _feed = RssFeed.parse(rssString);
-    } else {
-      throw Exception('bad http response status ${response.statusCode}');
-    }
-    notifyListeners();
-  }
-
+  RssItem _selectedItem;
   RssItem get selectedItem => _selectedItem;
-
   set selectedItem(RssItem value) {
     _selectedItem = value;
     notifyListeners();
   }
 
-  void download(RssItem item) async {
-    // mp3 src need to be fixed
-    final mediaUri = item.enclosure.url;
+  List<ItemTile> _itemTiles = [];
+  List<ItemTile> get itemTiles => _itemTiles;
+
+  // DownloadState _downloadState = DownloadState.untouched;
+  // DownloadState get downloadState => _downloadState;
+
+  // get isUntouched => downloadState == DownloadState.untouched;
+  // get isDownloading => downloadState == DownloadState.downloading;
+  // get isFinished => downloadState == DownloadState.finished;
+
+  Future<void> parseFeed() async {
+    final response = await http.get(feedUrl);
+    if (response.statusCode == 200) {
+      // decode machine code to character
+      final rssString = utf8.decode(response.bodyBytes);
+      _feed = RssFeed.parse(rssString);
+    } else {
+      throw Exception('bad http response status ${response.statusCode}');
+    }
+    prepareItemTiles();
+    notifyListeners();
+  }
+
+  void prepareItemTiles() {
+    List<ItemTile> list = [];
+    for (RssItem _i in _feed.items) {
+      list.add(ItemTile(
+        item: _i,
+        downloadState: DownloadState.untouched,
+      ));
+    }
+    _itemTiles = list;
+  }
+
+  // TODO: add downloading status (change download icon to progress circle)
+  Future<void> download(ItemTile itemTile) async {
+    final mediaUri = itemTile.item.enclosure.url;
 
     final client = http.Client();
     final req = http.Request('GET', Uri.parse(mediaUri));
@@ -58,9 +84,16 @@ class Podcast with ChangeNotifier {
     }
 
     final file = File(await _getDownloadPath(path.split(mediaUri).last));
+    itemTile.downloadState = DownloadState.downloading;
+    notifyListeners();
+    print('start downloading');
 
-    res.stream.pipe(file.openWrite()).whenComplete(() {
+    final sink = file.openWrite();
+    res.stream.pipe(sink).whenComplete(() {
       print('downloading complete');
+      print('$file');
+      itemTile.downloadState = DownloadState.finished;
+      notifyListeners();
     });
   }
 }

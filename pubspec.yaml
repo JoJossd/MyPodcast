@@ -36,6 +36,8 @@ dependencies:
   path_provider: ^1.6.0
   path: ^1.6.4
 
+  flutter_conditional_rendering: ^1.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

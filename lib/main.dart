@@ -23,6 +23,7 @@ class MyPodcastApp extends StatelessWidget {
       */
       create: (_) => Podcast()..parseFeed(),
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'My Podcast',
         theme: ThemeData(
           primaryColor: Color.fromARGB(255, 255, 219, 0),

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:webfeed/webfeed.dart';
+import 'package:flutter_conditional_rendering/flutter_conditional_rendering.dart';
 import 'package:my_podcast/model/rssfeed_data.dart';
 import 'package:my_podcast/page/episode_page.dart';
 import 'package:my_podcast/widget/custom_bottom_navbar.dart';
-import 'package:provider/provider.dart';
-import 'package:webfeed/webfeed.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -56,6 +57,7 @@ class EpisodeListPage extends StatelessWidget {
     so we have to provide a [BuildContext] before using the properties in ChangeNotifierProvider,
     to make sure the rebuild only apply to Scaffold-body not the whole Scaffold
     */
+    // Consumer will call builder method each time Podcast calls notifyListeners()
     return Consumer<Podcast>(builder: (consumerContext, podcast, _) {
       return podcast.feed != null
           ? EpisodeListView(rssFeed: podcast.feed)
@@ -70,52 +72,64 @@ class EpisodeListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext episodeListViewContext) {
-    return ListView(
-      children: rssFeed.items
-          .map(
-            (i) => ListTile(
-              contentPadding: EdgeInsets.all(16),
-              title: Text(
-                i.title,
-                style: TextStyle(fontSize: 20),
-              ),
-              subtitle: Text(
-                i.itunes.summary,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              trailing: IconButton(
-                icon: Icon(Icons.file_download),
-                onPressed: () {
-                  Scaffold.of(episodeListViewContext)
-                      .showSnackBar(SnackBar(content: Text('Downloading...')));
-                  Provider.of<Podcast>(episodeListViewContext, listen: false)
-                      .download(i);
-                },
-              ),
-              onTap: () {
-                /*
-                we don't want EpisodeListView[ListView widget](or its parent widget: HomePage[Scaffold widget])
-                to rebuid every time (Podcast podcast) changes, hence listen: false.
-
-                when set i to selectedItem, 
-                we make sure the current value(_selectedItem) is also set to i,
-                so that we can notify other widgets,
-                which listens to this ChangeNotifier, to rebuild.
-                */
-                Provider.of<Podcast>(episodeListViewContext, listen: false)
-                    .selectedItem = i;
-                Navigator.of(episodeListViewContext).push(
-                  MaterialPageRoute(builder: (_) => EpisodePage()),
-                );
-              },
+    return Consumer<Podcast>(builder: (consumerContext, podcast, _) {
+      return ListView.builder(
+        itemCount: rssFeed.items.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            contentPadding: EdgeInsets.all(16),
+            title: Text(
+              podcast.itemTiles[index].item.title,
+              style: TextStyle(fontSize: 20),
             ),
-          )
-          .toList(),
-    );
+            subtitle: Text(
+              podcast.itemTiles[index].item.itunes.summary,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: ConditionalSwitch.single<DownloadState>(
+              context: consumerContext,
+              valueBuilder: (BuildContext _) =>
+                  podcast.itemTiles[index].downloadState,
+              caseBuilders: {
+                DownloadState.untouched: (BuildContext context) => IconButton(
+                      icon: Icon(Icons.file_download),
+                      onPressed: () {
+                        Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text('Downloading...'),
+                          backgroundColor: Colors.blue[600],
+                        ));
+                        podcast.download(podcast.itemTiles[index]);
+                      },
+                    ),
+                DownloadState.downloading: (BuildContext _) => IconButton(
+                      icon: Icon(Icons.swap_vertical_circle),
+                      onPressed: () {},
+                    ),
+                DownloadState.finished: (BuildContext _) => IconButton(
+                      icon: Icon(Icons.check),
+                      onPressed: () {},
+                    ),
+              },
+              fallbackBuilder: (BuildContext consumerContext) => IconButton(
+                icon: Icon(Icons.error),
+                onPressed: () {},
+              ),
+            ),
+            onTap: () {
+              podcast.selectedItem = podcast.itemTiles[index].item;
+              Navigator.of(consumerContext).push(
+                MaterialPageRoute(builder: (_) => EpisodePage()),
+              );
+            },
+          );
+        },
+      );
+    });
   }
 }
 
+// TODO: add like list
 class DummyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
