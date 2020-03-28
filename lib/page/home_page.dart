@@ -117,7 +117,7 @@ class EpisodeListView extends StatelessWidget {
               ),
             ),
             onTap: () {
-              podcast.selectedItem = podcast.itemTiles[index].item;
+              podcast.selectedItemTile = podcast.itemTiles[index];
               Navigator.of(consumerContext).push(
                 MaterialPageRoute(builder: (_) => EpisodePage()),
               );

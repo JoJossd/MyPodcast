@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:audioplayers/audio_cache.dart';
 import 'package:provider/provider.dart';
+import 'package:path/path.dart' as path;
 import 'package:my_podcast/model/rssfeed_data.dart';
 
 // TODO: set volumn
@@ -113,7 +113,7 @@ class _AudioControlState extends State<AudioControl> {
 
   @override
   Widget build(BuildContext context) {
-    final item = Provider.of<Podcast>(context).selectedItem;
+    final itemTile = Provider.of<Podcast>(context).selectedItemTile;
     return SizedBox(
         width: 400,
         height: 130,
@@ -159,7 +159,13 @@ class _AudioControlState extends State<AudioControl> {
                     iconSize: Theme.of(context).iconTheme.size,
                     color: Colors.black,
                     onPressed: () {
-                      _isPlaying ? _pause() : _play(item.enclosure.url);
+                      _isPlaying
+                          ? _pause()
+                          : _play(itemTile.downloadState ==
+                                  DownloadState.finished
+                              ? path.join(defaultDirPath,
+                                  path.split(itemTile.item.enclosure.url).last)
+                              : itemTile.item.enclosure.url);
                     },
                   ),
                   IconButton(

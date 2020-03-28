@@ -9,9 +9,7 @@ import 'package:path/path.dart' as path;
 
 final feedUrl = 'https://aezfm.meldingcloud.com/rss/program/11';
 
-// seems adding nonexist path doesn't work
-final pathSuffix = 'dashcast/downloads';
-
+// define a higher level ItemTile class, including item's download status and item itself
 class ItemTile {
   RssItem item;
   DownloadState downloadState;
@@ -21,8 +19,11 @@ class ItemTile {
 
 enum DownloadState { untouched, downloading, finished }
 
-// TODO: keep ItemState consistant after restart
+String defaultDirPath;
+
+// TODO: keep ItemState consistant after restart => shared_preferences
 class Podcast with ChangeNotifier {
+  // Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   /*
   Why bother use a private variable?
   => to notify other widgets when the variable gets modified.
@@ -30,22 +31,15 @@ class Podcast with ChangeNotifier {
   RssFeed _feed;
   RssFeed get feed => _feed;
 
-  RssItem _selectedItem;
-  RssItem get selectedItem => _selectedItem;
-  set selectedItem(RssItem value) {
-    _selectedItem = value;
+  ItemTile _selectedItemTile;
+  ItemTile get selectedItemTile => _selectedItemTile;
+  set selectedItemTile(ItemTile value) {
+    _selectedItemTile = value;
     notifyListeners();
   }
 
   List<ItemTile> _itemTiles = [];
   List<ItemTile> get itemTiles => _itemTiles;
-
-  // DownloadState _downloadState = DownloadState.untouched;
-  // DownloadState get downloadState => _downloadState;
-
-  // get isUntouched => downloadState == DownloadState.untouched;
-  // get isDownloading => downloadState == DownloadState.downloading;
-  // get isFinished => downloadState == DownloadState.finished;
 
   Future<void> parseFeed() async {
     final response = await http.get(feedUrl);
@@ -56,25 +50,31 @@ class Podcast with ChangeNotifier {
     } else {
       throw Exception('bad http response status ${response.statusCode}');
     }
-    prepareItemTiles();
-    notifyListeners();
-  }
 
-  void prepareItemTiles() {
+    final dir = await getApplicationDocumentsDirectory();
+    defaultDirPath = dir.path;
+
     List<ItemTile> list = [];
     for (RssItem _i in _feed.items) {
+      String _fileName = path.split(_i.enclosure.url).last;
+      String _savePath = '$defaultDirPath/$_fileName';
+      bool _fileExists = await File(_savePath).exists();
+
       list.add(ItemTile(
         item: _i,
-        downloadState: DownloadState.untouched,
+        downloadState:
+            _fileExists ? DownloadState.finished : DownloadState.untouched,
       ));
     }
     _itemTiles = list;
+    notifyListeners();
   }
 
   // TODO: add downloading status (change download icon to progress circle)
   Future<void> download(ItemTile itemTile) async {
-    final mediaUri = itemTile.item.enclosure.url;
+    // final SharedPreferences prefs = await _prefs;
 
+    final mediaUri = itemTile.item.enclosure.url;
     final client = http.Client();
     final req = http.Request('GET', Uri.parse(mediaUri));
     final res = await client.send(req);
@@ -83,7 +83,7 @@ class Podcast with ChangeNotifier {
       throw Exception('bad mediaUri response status ${res.statusCode}');
     }
 
-    final file = File(await _getDownloadPath(path.split(mediaUri).last));
+    final file = File(await getDownloadPath(path.split(mediaUri).last));
     itemTile.downloadState = DownloadState.downloading;
     notifyListeners();
     print('start downloading');
@@ -98,9 +98,7 @@ class Podcast with ChangeNotifier {
   }
 }
 
-Future<String> _getDownloadPath(String filename) async {
-  final dir = await getApplicationDocumentsDirectory();
-  final pathPrefix = dir.path;
-  final absolutePath = path.join(pathPrefix, filename);
-  return absolutePath;
+Future<String> getDownloadPath(String filename) async {
+  final downloadedFilePath = path.join(defaultDirPath, filename);
+  return downloadedFilePath;
 }

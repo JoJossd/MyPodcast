@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:my_podcast/model/rssfeed_data.dart';
 import 'package:my_podcast/widget/audio_control.dart';
-import 'package:provider/provider.dart';
 
 final imageUrl = 'http://resezfm.meldingcloud.com/image/1904/1555550145451.jpg';
 
@@ -12,11 +12,12 @@ class EpisodePage extends StatelessWidget {
     we do want EpisodePage to rebuid(to suit for each item)
      every time (Podcast podcast) changes, hence no listen: false.
     */
-    final item = Provider.of<Podcast>(episodePageContext).selectedItem;
+    final itemTile = Provider.of<Podcast>(episodePageContext).selectedItemTile;
+
     return Scaffold(
       backgroundColor: Theme.of(episodePageContext).primaryColor,
       appBar: AppBar(
-        title: Text(item.title),
+        title: Text(itemTile.item.title),
         elevation: 0,
       ),
       body: SafeArea(
@@ -41,7 +42,7 @@ class EpisodePage extends StatelessWidget {
                 padding: const EdgeInsets.all(36),
                 child: SingleChildScrollView(
                   child: Text(
-                    item.itunes.summary,
+                    itemTile.item.itunes.summary,
                     style: TextStyle(fontSize: 20),
                   ),
                 ),
