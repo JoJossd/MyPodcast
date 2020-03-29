@@ -17,11 +17,10 @@ class ItemTile {
   ItemTile({this.item, this.downloadState});
 }
 
-enum DownloadState { untouched, downloading, finished }
+enum DownloadState { untouched, connecting, downloading, finished }
 
 String defaultDirPath;
 
-// TODO: keep ItemState consistant after restart => shared_preferences
 class Podcast with ChangeNotifier {
   // Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   /*
@@ -31,15 +30,15 @@ class Podcast with ChangeNotifier {
   RssFeed _feed;
   RssFeed get feed => _feed;
 
+  List<ItemTile> _itemTiles = [];
+  List<ItemTile> get itemTiles => _itemTiles;
+
   ItemTile _selectedItemTile;
   ItemTile get selectedItemTile => _selectedItemTile;
   set selectedItemTile(ItemTile value) {
     _selectedItemTile = value;
     notifyListeners();
   }
-
-  List<ItemTile> _itemTiles = [];
-  List<ItemTile> get itemTiles => _itemTiles;
 
   Future<void> parseFeed() async {
     final response = await http.get(feedUrl);
@@ -72,8 +71,7 @@ class Podcast with ChangeNotifier {
 
   // TODO: add downloading status (change download icon to progress circle)
   Future<void> download(ItemTile itemTile) async {
-    // final SharedPreferences prefs = await _prefs;
-
+    itemTile.downloadState = DownloadState.connecting;
     final mediaUri = itemTile.item.enclosure.url;
     final client = http.Client();
     final req = http.Request('GET', Uri.parse(mediaUri));
@@ -83,7 +81,9 @@ class Podcast with ChangeNotifier {
       throw Exception('bad mediaUri response status ${res.statusCode}');
     }
 
-    final file = File(await getDownloadPath(path.split(mediaUri).last));
+    final downloadedFilePath =
+        path.join(defaultDirPath, path.split(mediaUri).last);
+    final file = File(downloadedFilePath);
     itemTile.downloadState = DownloadState.downloading;
     notifyListeners();
     print('start downloading');
@@ -96,9 +96,17 @@ class Podcast with ChangeNotifier {
       notifyListeners();
     });
   }
-}
 
-Future<String> getDownloadPath(String filename) async {
-  final downloadedFilePath = path.join(defaultDirPath, filename);
-  return downloadedFilePath;
+  delete(ItemTile itemTile) {
+    final fileName = itemTile.item.enclosure.url;
+    final fileFullPath = path.join(defaultDirPath, path.split(fileName).last);
+    final dir = Directory(fileFullPath);
+    dir.deleteSync(recursive: true);
+    itemTile.downloadState = DownloadState.untouched;
+    notifyListeners();
+  }
+
+  refresh() {
+    parseFeed();
+  }
 }

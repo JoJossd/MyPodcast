@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:webfeed/webfeed.dart';
 import 'package:flutter_conditional_rendering/flutter_conditional_rendering.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:my_podcast/model/rssfeed_data.dart';
 import 'package:my_podcast/page/episode_page.dart';
 import 'package:my_podcast/widget/custom_bottom_navbar.dart';
@@ -72,56 +73,99 @@ class EpisodeListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext episodeListViewContext) {
-    return Consumer<Podcast>(builder: (consumerContext, podcast, _) {
+    return Consumer<Podcast>(builder: (_, podcast, __) {
       return ListView.builder(
         itemCount: rssFeed.items.length,
         itemBuilder: (context, index) {
-          return ListTile(
-            contentPadding: EdgeInsets.all(16),
-            title: Text(
-              podcast.itemTiles[index].item.title,
-              style: TextStyle(fontSize: 20),
-            ),
-            subtitle: Text(
-              podcast.itemTiles[index].item.itunes.summary,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            trailing: ConditionalSwitch.single<DownloadState>(
-              context: consumerContext,
-              valueBuilder: (BuildContext _) =>
-                  podcast.itemTiles[index].downloadState,
-              caseBuilders: {
-                DownloadState.untouched: (BuildContext context) => IconButton(
-                      icon: Icon(Icons.file_download),
-                      onPressed: () {
-                        Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text('Downloading...'),
-                          backgroundColor: Colors.blue[600],
-                        ));
-                        podcast.download(podcast.itemTiles[index]);
+          return podcast.itemTiles[index].downloadState ==
+                  DownloadState.finished
+              ? Slidable(
+                  child: MyListTile(tileIndex: index),
+                  actionPane: SlidableDrawerActionPane(),
+                  actionExtentRatio: 0.25,
+                  secondaryActions: <Widget>[
+                    IconSlideAction(
+                      caption: 'Delete',
+                      color: Theme.of(context).primaryColor,
+                      iconWidget: Icon(
+                        Icons.delete,
+                        size: 24,
+                        color: Colors.black45,
+                      ),
+                      onTap: () {
+                        podcast.delete(podcast.itemTiles[index]);
                       },
                     ),
-                DownloadState.downloading: (BuildContext _) => IconButton(
-                      icon: Icon(Icons.swap_vertical_circle),
-                      onPressed: () {},
-                    ),
-                DownloadState.finished: (BuildContext _) => IconButton(
-                      icon: Icon(Icons.check),
-                      onPressed: () {},
-                    ),
-              },
-              fallbackBuilder: (BuildContext consumerContext) => IconButton(
-                icon: Icon(Icons.error),
-                onPressed: () {},
-              ),
-            ),
-            onTap: () {
-              podcast.selectedItemTile = podcast.itemTiles[index];
-              Navigator.of(consumerContext).push(
-                MaterialPageRoute(builder: (_) => EpisodePage()),
-              );
-            },
+                  ],
+                )
+              : MyListTile(tileIndex: index);
+        },
+      );
+    });
+  }
+}
+
+class MyListTile extends StatelessWidget {
+  const MyListTile({@required this.tileIndex});
+
+  final int tileIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<Podcast>(builder: (_, podcast, __) {
+      return ListTile(
+        contentPadding: EdgeInsets.all(16),
+        title: Text(
+          podcast.itemTiles[tileIndex].item.title,
+          style: TextStyle(fontSize: 20),
+        ),
+        subtitle: Text(
+          podcast.itemTiles[tileIndex].item.itunes.summary,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: ConditionalSwitch.single<DownloadState>(
+          context: context,
+          valueBuilder: (BuildContext _) =>
+              podcast.itemTiles[tileIndex].downloadState,
+          caseBuilders: {
+            DownloadState.untouched: (BuildContext context) => IconButton(
+                  icon: Icon(Icons.file_download),
+                  onPressed: () {
+                    Scaffold.of(context).showSnackBar(SnackBar(
+                      content: Text('Downloading...'),
+                      backgroundColor: Colors.blue[600],
+                    ));
+                    podcast.download(podcast.itemTiles[tileIndex]);
+                  },
+                ),
+            // TODO: resize and reposition CircularProgressIndicator
+            DownloadState.connecting: (BuildContext _) => SizedBox(
+                  child: CircularProgressIndicator(
+                    backgroundColor: Colors.blue[600],
+                  ),
+                  height: 10,
+                  width: 10,
+                ),
+            DownloadState.downloading: (BuildContext _) => IconButton(
+                  icon: Icon(Icons.swap_vertical_circle),
+                  color: Colors.blue[600],
+                  onPressed: () {},
+                ),
+            DownloadState.finished: (BuildContext _) => IconButton(
+                  icon: Icon(Icons.check),
+                  onPressed: () {},
+                ),
+          },
+          fallbackBuilder: (BuildContext consumerContext) => IconButton(
+            icon: Icon(Icons.error),
+            onPressed: () {},
+          ),
+        ),
+        onTap: () {
+          podcast.selectedItemTile = podcast.itemTiles[tileIndex];
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => EpisodePage()),
           );
         },
       );
