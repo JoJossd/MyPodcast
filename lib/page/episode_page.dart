@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:my_podcast/page/app_theme.dart';
 import 'package:my_podcast/model/rssfeed_data.dart';
 import 'package:my_podcast/widget/audio_control.dart';
-
-final imageUrl = 'http://resezfm.meldingcloud.com/image/1904/1555550145451.jpg';
 
 class EpisodePage extends StatelessWidget {
   @override
@@ -15,7 +14,6 @@ class EpisodePage extends StatelessWidget {
     final itemTile = Provider.of<Podcast>(episodePageContext).selectedItemTile;
 
     return Scaffold(
-      backgroundColor: Theme.of(episodePageContext).primaryColor,
       appBar: AppBar(
         title: Text(itemTile.item.title),
         elevation: 0,
@@ -24,19 +22,17 @@ class EpisodePage extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Container(
-              // flex: 3,
               height: 400,
               width: 400,
               child: Padding(
                 padding: const EdgeInsets.all(28),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(imageUrl),
+                  child: Image.asset('assets/images/roundtable_image.jpg'),
                 ),
               ),
             ),
             Container(
-              // flex: 2,
               height: 210,
               child: Padding(
                 padding: const EdgeInsets.all(36),

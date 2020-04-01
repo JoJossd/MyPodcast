@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:my_podcast/page/drawer.dart';
 import 'package:provider/provider.dart';
 import 'package:webfeed/webfeed.dart';
 import 'package:flutter_conditional_rendering/flutter_conditional_rendering.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:my_podcast/page/like_page.dart';
 import 'package:my_podcast/model/rssfeed_data.dart';
 import 'package:my_podcast/page/episode_page.dart';
 import 'package:my_podcast/widget/custom_bottom_navbar.dart';
@@ -17,7 +19,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> pages = [
     EpisodeListPage(),
-    DummyPage(),
+    LikePage(),
   ];
 
   final List<IconData> iconList = [
@@ -32,7 +34,7 @@ class _HomePageState extends State<HomePage> {
         title: Text('Episode List'),
         elevation: 0,
       ),
-      backgroundColor: Theme.of(homepageContext).primaryColor,
+      drawer: MyDrawer(),
       body: pages[navIndex],
       bottomNavigationBar: MyNavBar(
         icons: iconList,
@@ -48,18 +50,8 @@ class _HomePageState extends State<HomePage> {
 class EpisodeListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    /*
-    use Consumer to provide a [BuildContext] on which we use the properties in Provider.
-    Provider.of<Podcast>(context) cannot create a [BuildContext],
-    it can only use the nearest context above.
-
-    Since EpisodeListView or Center is built on Scaffold-body widget(not Scaffold, also not HomePage),
-    but that body widget doesn't have a [BuildContext],
-    so we have to provide a [BuildContext] before using the properties in ChangeNotifierProvider,
-    to make sure the rebuild only apply to Scaffold-body not the whole Scaffold
-    */
     // Consumer will call builder method each time Podcast calls notifyListeners()
-    return Consumer<Podcast>(builder: (consumerContext, podcast, _) {
+    return Consumer<Podcast>(builder: (_, podcast, __) {
       return podcast.feed != null
           ? EpisodeListView(rssFeed: podcast.feed)
           : Center(child: CircularProgressIndicator());
@@ -82,10 +74,10 @@ class EpisodeListView extends StatelessWidget {
               ? Slidable(
                   child: MyListTile(tileIndex: index),
                   actionPane: SlidableDrawerActionPane(),
-                  actionExtentRatio: 0.25,
+                  actionExtentRatio: 0.2,
                   secondaryActions: <Widget>[
                     IconSlideAction(
-                      caption: 'Delete',
+                      // caption: 'Delete',
                       color: Theme.of(context).primaryColor,
                       iconWidget: Icon(
                         Icons.delete,
@@ -117,7 +109,6 @@ class MyListTile extends StatelessWidget {
         contentPadding: EdgeInsets.all(16),
         title: Text(
           podcast.itemTiles[tileIndex].item.title,
-          style: TextStyle(fontSize: 20),
         ),
         subtitle: Text(
           podcast.itemTiles[tileIndex].item.itunes.summary,
@@ -132,29 +123,29 @@ class MyListTile extends StatelessWidget {
             DownloadState.untouched: (BuildContext context) => IconButton(
                   icon: Icon(Icons.file_download),
                   onPressed: () {
-                    Scaffold.of(context).showSnackBar(SnackBar(
-                      content: Text('Downloading...'),
-                      backgroundColor: Colors.blue[600],
-                    ));
+                    // Scaffold.of(context).showSnackBar(SnackBar(
+                    //   content: Text('Downloading...'),
+                    //   backgroundColor: Colors.blue[600],
+                    // ));
                     podcast.download(podcast.itemTiles[tileIndex]);
                   },
                 ),
             // TODO: resize and reposition CircularProgressIndicator
             DownloadState.connecting: (BuildContext _) => SizedBox(
                   child: CircularProgressIndicator(
-                    backgroundColor: Colors.blue[600],
-                  ),
+                      backgroundColor: Colors.blue[600]),
                   height: 10,
                   width: 10,
                 ),
             DownloadState.downloading: (BuildContext _) => IconButton(
                   icon: Icon(Icons.swap_vertical_circle),
-                  color: Colors.blue[600],
+                  color: Theme.of(context).accentColor,
                   onPressed: () {},
                 ),
             DownloadState.finished: (BuildContext _) => IconButton(
-                  icon: Icon(Icons.check),
-                  onPressed: () {},
+                  icon: Icon(Icons.ac_unit),
+                  disabledColor: Theme.of(context).scaffoldBackgroundColor,
+                  onPressed: null,
                 ),
           },
           fallbackBuilder: (BuildContext consumerContext) => IconButton(
@@ -170,15 +161,5 @@ class MyListTile extends StatelessWidget {
         },
       );
     });
-  }
-}
-
-// TODO: add like list
-class DummyPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Dummy Page'),
-    );
   }
 }

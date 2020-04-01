@@ -106,6 +106,7 @@ class Podcast with ChangeNotifier {
     notifyListeners();
   }
 
+  // TODO: add drag to refresh function
   refresh() {
     parseFeed();
   }

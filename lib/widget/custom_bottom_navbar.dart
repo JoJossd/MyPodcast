@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-double customIconSize = 45;
+import 'package:my_podcast/page/app_theme.dart';
 
 class MyNavBar extends StatefulWidget {
   const MyNavBar({
@@ -62,32 +61,34 @@ class _MyNavBarState extends State<MyNavBar> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 80,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          for (var i = 0; i < widget.icons.length; i++)
-            CustomPaint(
-              foregroundPainter: i == widget.activeIndex
-                  ? BeaconPainter(
-                      beaconRadius: beaconRadius,
-                      maxBeaconRadius: maxBeaconRadius,
-                    )
-                  : null,
-              child: GestureDetector(
-                child: Icon(
-                  widget.icons[i],
-                  size: customIconSize,
-                  color: i == widget.activeIndex
-                      ? Colors.blue[600]
-                      : Colors.black45,
+    return Theme(
+      data: darkTheme,
+      child: Container(
+        height: 80,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            for (var i = 0; i < widget.icons.length; i++)
+              CustomPaint(
+                foregroundPainter: i == widget.activeIndex
+                    ? BeaconPainter(
+                        beaconRadius: beaconRadius,
+                        maxBeaconRadius: maxBeaconRadius,
+                      )
+                    : null,
+                child: GestureDetector(
+                  child: Icon(
+                    widget.icons[i],
+                    color: i == widget.activeIndex
+                        ? Theme.of(context).accentColor
+                        : Colors.black45,
+                  ),
+                  // onTap triggers the change of activeIndex, which triggers didUpdateWidget to rebuild MyNavBar
+                  onTap: () => widget.onPressed(i),
                 ),
-                // onTap triggers the change of activeIndex, which triggers didUpdateWidget to rebuild MyNavBar
-                onTap: () => widget.onPressed(i),
-              ),
-            )
-        ],
+              )
+          ],
+        ),
       ),
     );
   }
@@ -96,6 +97,9 @@ class _MyNavBarState extends State<MyNavBar> with TickerProviderStateMixin {
 class BeaconPainter extends CustomPainter {
   final double beaconRadius;
   final double maxBeaconRadius;
+
+  // TODO: isDarkTheme ? :
+  final theme = darkTheme;
 
   BeaconPainter({
     this.beaconRadius,
@@ -112,16 +116,22 @@ class BeaconPainter extends CustomPainter {
         : maxBeaconRadius - beaconRadius;
 
     final paint = Paint()
-      ..color = Colors.blue[600]
+      ..color = theme.accentColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth;
 
     canvas.drawCircle(
-        Offset(customIconSize / 2, customIconSize / 2), beaconRadius, paint);
+      Offset(customIconSize / 2, customIconSize / 2),
+      beaconRadius,
+      paint,
+    );
   }
 
   @override
   bool shouldRepaint(BeaconPainter oldDelegate) {
     return true;
   }
+
+  @override
+  bool shouldRebuildSemantics(BeaconPainter oldDelegate) => false;
 }
