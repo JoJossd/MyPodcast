@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_podcast/page/app_theme.dart';
 import 'package:my_podcast/widget/theme_manager.dart';
 import 'package:provider/provider.dart';
 
@@ -15,14 +14,12 @@ class SettingsPage extends StatelessWidget {
         child: ListView.builder(
           itemCount: appThemeData.length,
           itemBuilder: (BuildContext context, int index) {
-            final theme = ThemeName.values[index];
+            final ThemeName theme = ThemeName.values[index];
             return Card(
               color: appThemeData[theme].primaryColor,
               child: ListTile(
-                onTap: () {
-                  Provider.of<ThemeManager>(context, listen: false)
-                      .setTheme(theme);
-                },
+                onTap: () => Provider.of<ThemeManager>(context, listen: false)
+                    .setTheme(theme),
                 title: Text(
                   enumParse(theme),
                   style: appThemeData[theme].textTheme.body1,

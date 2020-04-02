@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_podcast/page/app_theme.dart';
+import 'package:my_podcast/widget/app_theme.dart';
 
 class MyNavBar extends StatefulWidget {
   const MyNavBar({

@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
 
-enum ThemeName { light, dark }
-
-String enumParse(ThemeName t) {
-  return t.toString().split('.')[1];
-}
-
-final appThemeData = {ThemeName.light: lightTheme, ThemeName.dark: darkTheme};
-
 const customIconSize = 40;
 
 final ThemeData lightTheme = ThemeData.dark().copyWith(
