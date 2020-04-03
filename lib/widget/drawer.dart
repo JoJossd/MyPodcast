@@ -13,7 +13,8 @@ class MyDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+            decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.9)),
             child: null,
           ),
           ListTile(

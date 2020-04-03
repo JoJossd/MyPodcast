@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:my_podcast/model/rssfeed_data.dart';
 
-// TODO: set volumn
+// TODO: keep play duration state after close the app
 enum PlayerState { stopped, playing, paused }
 
 class AudioControl extends StatefulWidget {

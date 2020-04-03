@@ -8,10 +8,8 @@ import 'package:my_podcast/widget/audio_control.dart';
 class EpisodePage extends StatelessWidget {
   @override
   Widget build(BuildContext episodePageContext) {
-    /*
-    we do want EpisodePage to rebuid(to suit for each item)
-     every time (Podcast podcast) changes, hence no listen: false.
-    */
+    // we do want EpisodePage to rebuid(to suit for each item)
+    // every time (Podcast podcast) changes, hence no listen: false.
     final itemTile = Provider.of<Podcast>(episodePageContext).selectedItemTile;
 
     return Consumer<ThemeManager>(builder: (_, themeManager, __) {

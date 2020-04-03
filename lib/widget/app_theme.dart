@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 const customIconSize = 40;
 
 final ThemeData lightTheme = ThemeData.dark().copyWith(
-  primaryColor: Color(0xffffdb00),
-  accentColor: Colors.yellowAccent[100],
+  primaryColor: Color(0xffff8201),
+  accentColor: Color(0xffff8201),
   scaffoldBackgroundColor: Color(0xffffdb00),
   // canvasColor: Colors.transparent,
   buttonTheme: ButtonThemeData(

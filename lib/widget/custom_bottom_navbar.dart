@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_podcast/widget/app_theme.dart';
+import 'package:my_podcast/widget/theme_manager.dart';
+import 'package:provider/provider.dart';
 
 class MyNavBar extends StatefulWidget {
   const MyNavBar({
@@ -61,49 +63,51 @@ class _MyNavBarState extends State<MyNavBar> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: darkTheme,
-      child: Container(
-        height: 80,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            for (var i = 0; i < widget.icons.length; i++)
-              CustomPaint(
-                foregroundPainter: i == widget.activeIndex
-                    ? BeaconPainter(
-                        beaconRadius: beaconRadius,
-                        maxBeaconRadius: maxBeaconRadius,
-                      )
-                    : null,
-                child: GestureDetector(
-                  child: Icon(
-                    widget.icons[i],
-                    color: i == widget.activeIndex
-                        ? Theme.of(context).accentColor
-                        : Colors.black45,
+    return Consumer<ThemeManager>(builder: (context, themeManager, _) {
+      return Theme(
+        data: themeManager.themeData,
+        child: Container(
+          height: 70,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              for (var i = 0; i < widget.icons.length; i++)
+                CustomPaint(
+                  foregroundPainter: i == widget.activeIndex
+                      ? BeaconPainter(
+                          beaconRadius: beaconRadius,
+                          maxBeaconRadius: maxBeaconRadius,
+                          themeData: themeManager.themeData)
+                      : null,
+                  child: GestureDetector(
+                    child: Icon(
+                      widget.icons[i],
+                      color: i == widget.activeIndex
+                          ? Theme.of(context).accentColor
+                          : Colors.black45,
+                    ),
+                    // onTap triggers the change of activeIndex, which triggers didUpdateWidget to rebuild MyNavBar
+                    onTap: () => widget.onPressed(i),
                   ),
-                  // onTap triggers the change of activeIndex, which triggers didUpdateWidget to rebuild MyNavBar
-                  onTap: () => widget.onPressed(i),
-                ),
-              )
-          ],
+                )
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }
 
 class BeaconPainter extends CustomPainter {
   final double beaconRadius;
   final double maxBeaconRadius;
-
-  // TODO: isDarkTheme ? :
-  final theme = darkTheme;
+  // pass theme data to child widget
+  final ThemeData themeData;
 
   BeaconPainter({
     this.beaconRadius,
     this.maxBeaconRadius,
+    this.themeData,
   });
 
   @override
@@ -116,7 +120,7 @@ class BeaconPainter extends CustomPainter {
         : maxBeaconRadius - beaconRadius;
 
     final paint = Paint()
-      ..color = theme.accentColor
+      ..color = themeData.accentColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth;
 
