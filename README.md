@@ -1,4 +1,4 @@
-# Roundtable Podcast
+# Round Table Podcast
 
 <img src="http://resezfm.meldingcloud.com/image/1904/1555550145451.jpg" width="200">
 
@@ -6,13 +6,19 @@
 
 A home-made podcast app built with flutter.
 
-## Features
-
-- [x] play
-- [x] download
-- [x] two themes
-
 ## Screenshots
+
+### light mode
+
+  <img src="screenshots/Simulator Screen Shot - iPhone 11 Pro Max - 2020-04-06 at 20.40.21.png" width="200">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="screenshots/Simulator Screen Shot - iPhone 11 Pro Max - 2020-04-06 at 20.40.47.png" width="200">
+
+### dark mode
+
+  <img src="screenshots/Simulator Screen Shot - iPhone 11 Pro Max - 2020-04-06 at 20.41.01.png" width="200">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="screenshots/Simulator Screen Shot - iPhone 11 Pro Max - 2020-04-06 at 20.41.06.png" width="200">
 
 ## Contributing
 
