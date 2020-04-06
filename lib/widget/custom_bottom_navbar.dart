@@ -18,8 +18,9 @@ class MyNavBar extends StatefulWidget {
   _MyNavBarState createState() => _MyNavBarState();
 }
 
-class _MyNavBarState extends State<MyNavBar> with TickerProviderStateMixin {
-  double beaconRadius;
+class _MyNavBarState extends State<MyNavBar>
+    with SingleTickerProviderStateMixin {
+  double beaconRadius = 0;
   double maxBeaconRadius = 30;
 
   AnimationController _controller;
@@ -27,33 +28,30 @@ class _MyNavBarState extends State<MyNavBar> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    beaconRadius = 0;
+    _controller = AnimationController(
+      duration: Duration(milliseconds: 200),
+      vsync: this,
+    );
   }
 
   // update widget means rebuild MyNavBar, which involves repainting CustomPaint
   @override
   void didUpdateWidget(MyNavBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // print('${widget.activeIndex}, ${oldWidget.activeIndex}');
     if (widget.activeIndex != oldWidget.activeIndex) {
       _startAnimation();
     }
   }
 
   void _startAnimation() {
-    _controller = AnimationController(
-      duration: Duration(milliseconds: 200),
-      vsync: this,
-    );
+    _controller.reset();
     final _curve = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-
     Tween<double>(begin: 0, end: 1).animate(_curve)
       ..addListener(() {
         setState(() {
           beaconRadius = maxBeaconRadius * _curve.value;
           if (beaconRadius == maxBeaconRadius) {
             beaconRadius = 0;
-            // print('$beaconRadius, $maxBeaconRadius');
           }
         });
       });
@@ -67,7 +65,7 @@ class _MyNavBarState extends State<MyNavBar> with TickerProviderStateMixin {
       return Theme(
         data: themeManager.themeData,
         child: Container(
-          height: 70,
+          height: 90,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -132,10 +130,5 @@ class BeaconPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(BeaconPainter oldDelegate) {
-    return true;
-  }
-
-  @override
-  bool shouldRebuildSemantics(BeaconPainter oldDelegate) => false;
+  bool shouldRepaint(BeaconPainter oldDelegate) => true;
 }
